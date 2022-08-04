@@ -29,17 +29,17 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 
     if !config.ignore_warning {
         println!("-------------");
-        println!("AVISO: Poner en el parámetro de lanzamiento de tf2 los siguientes parámetros:");
+        println!("BEFORE DOING ANYTHING: Put these launch parameters in tf2's steam properties");
         println!("-usercon -condebug -conclearlog");
-        println!("Recuerde poner en su autoexec.cfg:");
+        println!("Remember to save a file named autoexec.cfg in tf2folder/tf/cfg/ with the following content:");
         println!("ip 0.0.0.0");
         println!("rcon_password \"{}\"", config.rcon_password);
         println!("net_start");
-        println!("Puedes desactivar esta alerta en el config.json");
+        println!("You can disable this warning in the config.json");
         println!("-------------");
-        println!("Empezando dentro de 10 segundos");
+        println!("Starting in 10 seconds");
         thread::sleep(Duration::from_secs(10));
-        println!("Empezando ahora...");
+        println!("Starting now");
     }
 
     let tf2path = Path::new(&config.tf2_path);
