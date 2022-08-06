@@ -56,8 +56,9 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
             .await
         {
             Ok(_conn) => _conn,
-            Err(_) => {
+            Err(why) => {
                 println!("No RCON detected from {} or incorrect password", address);
+                println!("{}", why);
                 task::sleep(Duration::from_secs(2)).await;
                 continue;
             }
@@ -97,7 +98,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
                         let _ = send_command(&mut conn, "-left").await;
                         continue;
                     }
-                    let _ = send_command(&mut conn, "+taunt 1").await;
+                    let _ = send_command(&mut conn, &format!("taunt 1")).await;
                 }
             }
             task::sleep(Duration::from_millis(100)).await;
