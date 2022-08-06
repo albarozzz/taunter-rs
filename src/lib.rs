@@ -14,7 +14,7 @@ pub struct Config {
     #[serde(default)]
     pub use_spinbot: bool,
     #[serde(default)]
-    pub message: String,
+    pub words: Vec<String>,
     #[serde(default)]
     pub use_soundpad: bool,
     #[serde(default)]

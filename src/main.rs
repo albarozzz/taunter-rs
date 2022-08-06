@@ -1,4 +1,6 @@
 use async_std::task;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use rcon::{Connection, Error};
 use std::error;
 use std::fs::File;
@@ -50,6 +52,8 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     for username in config.usernames {
         usernames_parsed.push(username);
     }
+
+    let mut rng = thread_rng();
     loop {
         let mut conn: Connection = match Connection::builder()
             .connect(address, &config.rcon_password)
@@ -89,8 +93,9 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
                     if config.use_soundpad {
                         let _ = play_sound(&config.soundpad_path).await;
                     }
-                    if !config.message.is_empty() {
-                        let _ = send_command(&mut conn, &format!("say {}", config.message)).await;
+                    if !config.words.is_empty() {
+                        let choosed: &str = config.words.choose(&mut rng).unwrap();
+                        let _ = send_command(&mut conn, &format!("say {}", choosed)).await;
                     }
                     if config.use_spinbot {
                         let _ = send_command(&mut conn, "+left").await;
