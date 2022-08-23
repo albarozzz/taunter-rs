@@ -103,7 +103,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
                         let _ = send_command(&mut conn, "-left").await;
                         continue;
                     }
-                    let _ = send_command(&mut conn, &format!("taunt 1")).await;
+                    let _ = send_command(&mut conn, "taunt 1").await;
                 }
             }
             task::sleep(Duration::from_millis(100)).await;
@@ -129,7 +129,8 @@ async fn play_sound(soundpad_path: &str) -> Result<(), Box<dyn error::Error>> {
     let _ = Command::new("cmd")
         .current_dir(soundpad_path)
         .args(["/C", "Soundpad", "-rc", "DoPlaySound(1)"])
-        .spawn();
+        .spawn()
+        .expect("command invoking soundpad failed!");
 
     Ok(())
 }
