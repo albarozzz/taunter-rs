@@ -47,12 +47,6 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     let tf2path = Path::new(&config.tf2_path);
     let console_log = tf2path.join("tf").join("console.log");
 
-    let mut usernames_parsed: Vec<String> = Vec::new();
-
-    for username in config.usernames {
-        usernames_parsed.push(username);
-    }
-
     let mut rng = thread_rng();
     loop {
         let mut conn: Connection = match Connection::builder()
@@ -86,7 +80,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
             // the fifth last line to EOF line
             for (i, line) in lines[last_pos..].iter().enumerate() {
                 if last_pos > the_last_pos
-                    && check(&usernames_parsed, &config.username_victim, line)
+                    && check(&config.usernames, &config.username_victim, line)
                 {
                     the_last_pos = last_pos + i;
                     println!("Position: {}, Line: {}", the_last_pos, line);
