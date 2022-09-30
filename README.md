@@ -28,7 +28,7 @@ Then, you need to configure your config.json located in the executable's folder 
         "YOUR STEAM USERNAME",
         "YOUR FRIEND'S USERNAME" // delete this if you don't want to taunt when your friend kill
     ],
-    "message": "" // message you want to send when any user in usernames kill someone
+    "words": ["message1", "..."] // list of message(s) you want to send when any user in usernames kill someone, ONLY 1 MESSAGE WILL BE SENT RANDOMLY
 }
 ```
 
