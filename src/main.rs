@@ -1,26 +1,25 @@
 use async_std::task;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use rcon::{Connection, Error};
-use std::error;
+use rcon::Connection;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::path::Path;
 use std::process::Command;
 use std::thread;
 use std::time::Duration;
-use taunter::Config;
+use taunter::{Config, Result};
 
 #[async_std::main]
-async fn main() -> Result<(), Box<dyn error::Error>> {
-    let json_file: File = match File::open(&Path::new("config.json")) {
-        Ok(file) => file,
+async fn main() -> Result<()> {
+    let json_file: BufReader<File> = match File::open(&Path::new("config.json")) {
+        Ok(file) => BufReader::new(file),
         Err(why) => {
             panic!("Error opening file config.json: {}", why);
         }
     };
 
-    let config: Config = match serde_json::from_reader(BufReader::new(json_file)) {
+    let config: Config = match serde_json::from_reader(json_file) {
         Ok(json) => json,
         Err(why) => {
             panic!("Error parsing file config.json: {}", why);
@@ -61,15 +60,15 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
                 continue;
             }
         };
-        let mut the_last_pos = 0usize;
+        let mut the_last_pos: usize = 0;
         loop {
             let mut file = match File::open(&console_log) {
                 Err(why) => panic!("couldn't open console log: {}", why),
-                Ok(file) => file,
+                Ok(file) => BufReader::new(file),
             };
             let mut s = String::new();
-            file.read_to_string(&mut s)?;
-            let lines: Vec<&str> = s.split("\n").collect();
+            file.read_to_string(&mut s)?; // TODO: BETTER IMPLEMENTATION OF THIS. (to save up memory???)
+            let lines: Vec<&str> = s.split('\n').collect(); // collect lines of the file to loop through them, this is not efficient? but I think BufReader.lines() won't work for this kind of thing?
             if lines.len() <= 6 || lines.len() < the_last_pos {
                 println!("Waiting for console.log to output");
                 task::sleep(Duration::from_secs(1)).await;
@@ -79,6 +78,8 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
 
             // the fifth last line to EOF line
             for (i, line) in lines[last_pos..].iter().enumerate() {
+                // last_pos is the beginning of the iteration.
+                // the_last_pos is the current line in the file.
                 if last_pos > the_last_pos
                     && check(&config.usernames, &config.username_victim, line)
                 {
@@ -88,7 +89,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
                         let _ = play_sound(&config.soundpad_path).await;
                     }
                     if !config.words.is_empty() {
-                        let choosed: &str = config.words.choose(&mut rng).unwrap();
+                        let choosed: &str = config.words.choose(&mut rng).unwrap(); // select random response
                         let _ = send_command(&mut conn, &format!("say {}", choosed)).await;
                     }
                     if config.use_spinbot {
@@ -97,7 +98,7 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
                         let _ = send_command(&mut conn, "-left").await;
                         continue;
                     }
-                    let _ = send_command(&mut conn, "taunt 1").await;
+                    let _ = send_command(&mut conn, "taunt 1").await; // select the first taunt
                 }
             }
             task::sleep(Duration::from_millis(100)).await;
@@ -105,8 +106,10 @@ async fn main() -> Result<(), Box<dyn error::Error>> {
     }
 }
 
-fn check(usernames: &Vec<String>, username_victim: &str, line: &str) -> bool {
-    for username in usernames {
+fn check(usernames: &[String], username_victim: &str, line: &str) -> bool {
+    // TODO: BETTER IMPLEMENTATION OF THIS TOO, with regex maybe?
+    // loops through the usernames and if the line starts with that username + killed + enemy then this is the line we were looking for
+    for username in usernames.iter() {
         if line.starts_with(&format!("{} killed {}", username, username_victim)) {
             return true;
         }
@@ -114,12 +117,13 @@ fn check(usernames: &Vec<String>, username_victim: &str, line: &str) -> bool {
     false
 }
 
-async fn send_command(conn: &mut Connection, command: &str) -> Result<(), Error> {
+async fn send_command(conn: &mut Connection, command: &str) -> Result<()> {
     let _ = conn.cmd(command).await?;
     Ok(())
 }
 
-async fn play_sound(soundpad_path: &str) -> Result<(), Box<dyn error::Error>> {
+async fn play_sound(soundpad_path: &str) -> Result<()> {
+    // TODO: IMPLEMENTATION TO SOUNDUX FOR LINUX USERS??
     let _ = Command::new("cmd")
         .current_dir(soundpad_path)
         .args(["/C", "Soundpad", "-rc", "DoPlaySound(1)"])

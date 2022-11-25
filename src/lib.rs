@@ -1,4 +1,7 @@
 use serde::Deserialize;
+use std::error::Error;
+
+pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 #[derive(Deserialize, Default)]
 pub struct Config {
