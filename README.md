@@ -1,4 +1,5 @@
 [![Release](https://github.com/albarozzz/taunter-rs/actions/workflows/release.yml/badge.svg)](https://github.com/albarozzz/taunter-rs/actions/workflows/release.yml)
+
 Taunter-rs provides a way of interacting to Team Fortress 2 without modifying core files as that would be illegal and you could be VAC banned, instead it uses RCON and the console log to communicate to TF2, a non-intended way of using RCON but legal as we don't modify anything.
 
 # Instructions
