@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [v0.4.3] - 2022-11-30
+ 
+To update the taunter you just have to overwrite the binary!
+**IMPORTANT: to run the program from a configuration file `./taunter --config config.json`**
+ 
+### Added
+
+- Added an example configuration file config.json.
+
 ## [v0.4.2] - 2022-11-30
  
 To update the taunter you just have to overwrite the binary!
