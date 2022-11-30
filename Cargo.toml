@@ -1,6 +1,6 @@
 [package]
 name = "taunter"
-version = "0.4.3"
+version = "0.5.0"
 edition = "2021"
 license = "MIT"
 
@@ -14,14 +14,9 @@ serde_json = "1.0"
 serde = { version = "1.0.141", features = ["derive"] }
 clap = { version = "4.0.27", features = ["derive"] }
 rand = "0.8.4"
-fancy-regex = { version = "0.10.0", optional = true }
-lazy_static = { version = "1.4.0", optional = true }
 
 [build-dependencies]
 winres = "0.1"
 
 [dev-dependencies]
 async-std = { version = "1.9.0", features = ["attributes"] }
-
-[features]
-regex = ["dep:fancy-regex", "dep:lazy_static"]

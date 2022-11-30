@@ -64,24 +64,13 @@ pub struct Config {
     )]
     pub usernames: Vec<String>,
 
-    #[cfg(not(feature = "regex"))]
-    #[serde(default)]
-    #[arg(
-        short = 'v', 
-        long = "username-victim", 
-        default_value = "",
-        help("The enemy's username. Optional. eg: --username-victim Pepe")
-    )]
-    pub username_victim: String,
-
-    #[cfg(feature = "regex")]
     #[serde(default)]
     #[arg(
         short = 'v', 
         long = "username-victim",
         num_args(0..),
         value_delimiter = ',',
-        help("The enemy's username. Optional. eg: --username-victim Pepe")
+        help("List of enemy's usernames, the delimiter is ','. Optional. eg: --username-victim Pepe,Paco,...")
     )]
     pub username_victim: Vec<String>,
 

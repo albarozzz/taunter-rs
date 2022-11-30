@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [v0.5.0] - 2022-11-30
+ 
+To update the taunter you just have to overwrite the binary!
+**IMPORTANT: to run the program from a configuration file `./taunter --config config.json`**
+ 
+### Added
+
+- Changed check() to analyze the string and extract the username and the victim's name.
+- Now username_victim is a list of string and not a string.
+
+### Removed
+
+- Removed all regex from the program.
+
 ## [v0.4.3] - 2022-11-30
  
 To update the taunter you just have to overwrite the binary!
