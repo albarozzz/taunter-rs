@@ -110,7 +110,7 @@ async fn main() -> Result<()> {
                     }
                 }
             }
-            task::sleep(Duration::from_millis(100)).await;
+            task::sleep(Duration::from_millis(150)).await;
         }
     }
 }
