@@ -1,29 +1,36 @@
 use async_std::task;
+use clap::Parser;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rcon::Connection;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::path::Path;
-use std::process::Command;
 use std::thread;
 use std::time::Duration;
-use taunter::{Config, Result};
+use taunter::{
+    helper::{check, play_sound, send_command},
+    Config, Result,
+};
 
 #[async_std::main]
 async fn main() -> Result<()> {
-    let json_file: BufReader<File> = match File::open(&Path::new("config.json")) {
-        Ok(file) => BufReader::new(file),
-        Err(why) => {
-            panic!("Error opening file config.json: {}", why);
-        }
-    };
+    let mut config = Config::parse();
+    if let Some(config_file) = config.config {
+        let json_file: BufReader<File> = match File::open(&Path::new(&config_file)) {
+            Ok(file) => BufReader::new(file),
+            Err(why) => {
+                panic!("Error opening file config.json: {}", why);
+            }
+        };
 
-    let config: Config = match serde_json::from_reader(json_file) {
-        Ok(json) => json,
-        Err(why) => {
-            panic!("Error parsing file config.json: {}", why);
-        }
+        let _config: Config = match serde_json::from_reader(json_file) {
+            Ok(json) => json,
+            Err(why) => {
+                panic!("Error parsing file config.json: {}", why);
+            }
+        };
+        config = _config;
     };
 
     let address: &str = &format!("127.0.0.1:{}", config.port);
@@ -88,8 +95,8 @@ async fn main() -> Result<()> {
                     if config.use_soundpad {
                         let _ = play_sound(&config.soundpad_path).await;
                     }
-                    if !config.words.is_empty() {
-                        let choosed: &str = config.words.choose(&mut rng).unwrap(); // select random response
+                    if let Some(ref words) = config.words {
+                        let choosed: &str = words.choose(&mut rng).unwrap(); // select random response
                         let _ = send_command(&mut conn, &format!("say {}", choosed)).await;
                     }
                     if config.use_spinbot {
@@ -98,37 +105,12 @@ async fn main() -> Result<()> {
                         let _ = send_command(&mut conn, "-left").await;
                         continue;
                     }
-                    let _ = send_command(&mut conn, "taunt 1").await; // select the first taunt
+                    if config.use_taunt {
+                        let _ = send_command(&mut conn, "taunt 1").await; // select the first taunt
+                    }
                 }
             }
             task::sleep(Duration::from_millis(100)).await;
         }
     }
-}
-
-fn check(usernames: &[String], username_victim: &str, line: &str) -> bool {
-    // TODO: BETTER IMPLEMENTATION OF THIS TOO, with regex maybe?
-    // loops through the usernames and if the line starts with that username + killed + enemy then this is the line we were looking for
-    for username in usernames.iter() {
-        if line.starts_with(&format!("{} killed {}", username, username_victim)) {
-            return true;
-        }
-    }
-    false
-}
-
-async fn send_command(conn: &mut Connection, command: &str) -> Result<()> {
-    let _ = conn.cmd(command).await?;
-    Ok(())
-}
-
-async fn play_sound(soundpad_path: &str) -> Result<()> {
-    // TODO: IMPLEMENTATION TO SOUNDUX FOR LINUX USERS??
-    let _ = Command::new("cmd")
-        .current_dir(soundpad_path)
-        .args(["/C", "Soundpad", "-rc", "DoPlaySound(1)"])
-        .spawn()
-        .expect("command invoking soundpad failed!");
-
-    Ok(())
 }

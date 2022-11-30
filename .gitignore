@@ -1,2 +1,7 @@
 /target
 /.vscode
+taunter-linux-x64.zip
+taunter-win-x64.zip
+assets/config.json
+prepare_release.sh
+TODO
