@@ -11,9 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: taiki-e/create-gh-release-action@v1
-        #with:
+        with:
           # (optional)
-          #changelog: CHANGELOG.md
+          changelog: CHANGELOG.md
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,6 +40,7 @@ jobs:
           # [default value: windows]
           # [possible values: all, unix, windows, none]
           zip: windows
+          include: assets/config.json
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

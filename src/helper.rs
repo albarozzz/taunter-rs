@@ -32,6 +32,9 @@ pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bo
             Regex::new(r#"(.*)(?=\skilled)|(?<=killed\s)(.*)(?=\swith)"#).unwrap();
     }
 
+    // if the line is:
+    // AAAAAAA killed BBBBBBB with Scattergun
+    // then it will match AAAAAAA and BBBBBBB
     if !RE.is_match(line).unwrap() {
         return false;
     }
@@ -40,8 +43,8 @@ pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bo
         .filter_map(|matched| Some(matched.unwrap().as_str()))
         .collect();
 
-    if !usernames.contains(&captured[0].to_owned())
-        && (!username_victim.contains(&captured[1].to_owned()) && !username_victim.is_empty())
+    if !(usernames.contains(&captured[0].to_owned())
+        && (username_victim.contains(&captured[1].to_owned()) || username_victim.is_empty()))
     {
         return false;
     }
