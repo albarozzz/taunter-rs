@@ -3,12 +3,19 @@ use rcon::Connection;
 use std::process::Command;
 
 pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bool {
-    let killed = match line.find(" killed ") {
+    // rfind finds the index for the last ocurrance.
+    // This is to avoid confusing the 'killed' or 'with' as a part
+    // of the username or victim.
+    // eg: Albaro killed Albaro with Albaro killed Pedorrito with Scattergun
+    // username: Albaro killed Albaro with Albaro
+    // victim:   Pedorrito
+    // though it could fail.
+    let killed = match line.rfind(" killed ") {
         Some(i) => i,
         None => return false,
     };
 
-    let with = match line.find(" with ") {
+    let with = match line.rfind(" with ") {
         Some(i) => i,
         None => return false,
     };

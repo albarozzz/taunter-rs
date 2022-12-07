@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Changed find() for rfind() in check().
+
 ## [v0.5.0] - 2022-11-30
  
 To update the taunter you just have to overwrite the binary!
