@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
- 
+
+## [v0.6.0] - 2022-12-18
+
 ### Added
 
 - Added a necessary step to README.md ('log on' on autoexec.cfg).
