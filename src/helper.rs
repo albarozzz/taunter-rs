@@ -1,32 +1,53 @@
 use super::Result;
+use lazy_static::lazy_static;
 use rcon::Connection;
+use regex::Regex;
+#[cfg(target_family = "windows")]
 use std::process::Command;
 
 pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bool {
-    // rfind finds the index for the last ocurrance.
-    // This is to avoid confusing the 'killed' or 'with' as a part
-    // of the username or victim.
-    // eg: Albaro killed Albaro with Albaro killed Pedorrito with Scattergun
-    // username: Albaro killed Albaro with Albaro
-    // victim:   Pedorrito
-    // though it could fail.
-    let killed = match line.rfind(" killed ") {
-        Some(i) => i,
-        None => return false,
+    lazy_static! {
+        static ref RE: Regex = Regex::new("\"(.*?)\"").unwrap();
+    }
+
+    // the line must start with "L " to prevent fragmented lines
+    // caused by reading only the 2048 bytes of the bottom of the file
+    // although it is unlikely to happen
+    if !line.starts_with("L ") {
+        return false;
+    }
+
+    // the line we are looking for is like this:
+    // L 12/12/2022 - 20:41:37: "./albarozzz<2><[U:1:383329786]><Blue>" killed "Grim Bloody Fable<3><BOT><Red>" with "force_a_nature" (attacker_position "-5301 8028 -191") (victim_position "-5053 8100 -108")
+    // this captures everything in quotes and we make it a vector.
+    let caps: Vec<&str> = RE
+        .captures_iter(line)
+        .map(|m| match m.get(1) {
+            Some(i) => i.as_str(),
+            None => "",
+        })
+        .collect();
+
+    if caps.len() != 5 {
+        return false;
+    }
+
+    let username_find = if let Some(i) = caps[0].find('<') {
+        i
+    } else {
+        return false;
     };
 
-    let with = match line.rfind(" with ") {
-        Some(i) => i,
-        None => return false,
+    let victim_find = if let Some(i) = caps[1].find('<') {
+        i
+    } else {
+        return false;
     };
 
-    // if the line is
-    // AAA killed BBB with Scattergun
-    // then username will extract the string between the index 0 and the whitespace before killed.
-    // and victim will take the victim's username between the length of ' killed ' plus 8 and the whitespace before with.
-    // It was so simple!!
-    let username = &line[0..killed];
-    let victim = &line[killed + 8..with];
+    // eg: ./albarozzz<2><[U:1:383329786]><Blue> -> ./albarozzz
+    let username = &caps[0][0..username_find];
+    // eg: Grim Bloody Fable<3><BOT><Red>        -> Grim Bloody Fable
+    let victim = &caps[1][0..victim_find];
 
     if !(usernames.contains(&username.to_owned())
         && (username_victim.contains(&victim.to_owned()) || username_victim.is_empty()))
@@ -37,17 +58,24 @@ pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bo
 }
 
 pub async fn send_command(conn: &mut Connection, command: &str) -> Result<()> {
+    // TODO: EXECUTE CFG files to customize what to do
     let _ = conn.cmd(command).await?;
     Ok(())
 }
 
+#[cfg(target_family = "windows")]
 pub async fn play_sound(soundpad_path: &str) -> Result<()> {
-    // TODO: IMPLEMENTATION TO SOUNDUX FOR LINUX USERS??
     let _ = Command::new("cmd")
         .current_dir(soundpad_path)
         .args(["/C", "Soundpad", "-rc", "DoPlaySound(1)"])
         .spawn()
         .expect("command invoking soundpad failed!");
 
+    Ok(())
+}
+
+#[cfg(target_family = "unix")]
+pub async fn play_sound(_soundpad_path: &str) -> Result<()> {
+    // TODO: IMPLEMENTATION TO SOUNDUX FOR LINUX USERS
     Ok(())
 }

@@ -16,6 +16,7 @@ Next, you'll need to modify your autoexec.cfg inside tf2rootfolder/tf/cfg/ to ad
 
 ```
 ip 0.0.0.0
+log on
 rcon_password "YOUR PASSWORD"
 net_start
 ```

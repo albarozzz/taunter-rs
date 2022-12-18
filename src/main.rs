@@ -4,20 +4,17 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rcon::Connection;
 use std::fs::File;
-use std::io::{prelude::*, BufReader};
+use std::io::BufReader;
 use std::path::Path;
 use std::thread;
 use std::time::Duration;
-use taunter::{
-    helper::{check, play_sound, send_command},
-    Config, Result,
-};
+use taunter::{helper::*, Config, LastLines, Result};
 
 #[async_std::main]
 async fn main() -> Result<()> {
     let mut config = Config::parse();
     if let Some(config_file) = config.config {
-        let json_file: BufReader<File> = match File::open(&Path::new(&config_file)) {
+        let json_file: BufReader<File> = match File::open(Path::new(&config_file)) {
             Ok(file) => BufReader::new(file),
             Err(why) => {
                 panic!("Error opening file config.json: {}", why);
@@ -67,31 +64,42 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
-        let mut the_last_pos: usize = 0;
+        let mut last_line: String = String::from("-");
         loop {
-            let mut file = match File::open(&console_log) {
+            let file = match File::open(&console_log) {
                 Err(why) => panic!("couldn't open console log: {}", why),
-                Ok(file) => BufReader::new(file),
+                Ok(file) => file,
             };
-            let mut s = String::new();
-            file.read_to_string(&mut s)?; // TODO: BETTER IMPLEMENTATION OF THIS. (to save up memory???)
-            let lines: Vec<&str> = s.split('\n').collect(); // collect lines of the file to loop through them, this is not efficient? but I think BufReader.lines() won't work for this kind of thing?
-            if lines.len() <= 6 || lines.len() < the_last_pos {
+            let ll = LastLines::new(file);
+            let buffer = match ll.get_text() {
+                Ok(ok) => ok,
+                Err(err) => {
+                    println!("Console.log with unvalid UTF-8 or seeking failed: {}", err);
+                    task::sleep(Duration::from_secs(2)).await;
+                    break;
+                }
+            };
+            let lines: Vec<&str> = buffer.split('\n').collect(); // collect lines of the file to loop through them, this is not efficient? but I think BufReader.lines() won't work for this kind of thing?
+            if lines.len() <= 6 {
                 println!("Waiting for console.log to output");
                 task::sleep(Duration::from_secs(1)).await;
                 break;
             }
             let last_pos: usize = lines.len() - 6; // the fifth last line
 
-            // the fifth last line to EOF line
-            for (i, line) in lines[last_pos..].iter().enumerate() {
-                // last_pos is the beginning of the iteration.
-                // the_last_pos is the current line in the file.
-                if last_pos > the_last_pos
-                    && check(&config.usernames, &config.username_victim, line)
-                {
-                    the_last_pos = last_pos + i;
-                    println!("Position: {}, Line: {}", the_last_pos, line);
+            // finds the index of the latest kill
+            let find_line: usize = lines
+                .iter()
+                .rposition(|line| *line == last_line)
+                .unwrap_or(last_pos);
+
+            // the line of the latest kill to EOF
+            for (i, line) in lines[find_line + 1..].iter().enumerate() {
+                if check(&config.usernames, &config.username_victim, line) {
+                    println!("Position: {}, Line: {}", i, line);
+                    last_line = line.to_string();
+
+                    #[cfg(target_family = "windows")]
                     if config.use_soundpad {
                         let _ = play_sound(&config.soundpad_path).await;
                     }
@@ -110,7 +118,7 @@ async fn main() -> Result<()> {
                     }
                 }
             }
-            task::sleep(Duration::from_millis(150)).await;
+            task::sleep(Duration::from_millis(125)).await;
         }
     }
 }

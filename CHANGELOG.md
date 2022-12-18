@@ -9,9 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ### Added
 
+- Added a necessary step to README.md ('log on' on autoexec.cfg).
+- Added 2 tests to ensure that it works (at least check()).
+- Added conditional compiling to soundpad functions because soundpad is only in windows.
+
 ### Changed
 
-- Changed find() for rfind() in check().
+- Changed check() to match a regex.
+- Changed shortcut of argument ignore warning from 'g' to 'i'.
+- Changed descriptions of some arguments.
+
+### Fixed
+
+- Fixed implementation of read_to_string() to stop reading huge files.
+
+### Removed
+
+- Deleted useless borrow in Path::new().
 
 ## [v0.5.0] - 2022-11-30
  
