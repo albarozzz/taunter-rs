@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a redundant iteration all of 'lines' to find the last ocurrance.
+
 ## [v0.6.0] - 2022-12-18
 
 ### Added

@@ -86,15 +86,15 @@ async fn main() -> Result<()> {
                 break;
             }
             let last_pos: usize = lines.len() - 6; // the fifth last line
-
+            let lines_last_pos: &[&str] = &lines[last_pos..];
             // finds the index of the latest kill
-            let find_line: usize = lines
+            let find_line: usize = lines_last_pos
                 .iter()
                 .rposition(|line| *line == last_line)
-                .unwrap_or(last_pos);
+                .unwrap_or(0);
 
             // the line of the latest kill to EOF
-            for (i, line) in lines[find_line + 1..].iter().enumerate() {
+            for (i, line) in lines_last_pos[find_line + 1..].iter().enumerate() {
                 if check(&config.usernames, &config.username_victim, line) {
                     println!("Position: {}, Line: {}", i, line);
                     last_line = line.to_string();
