@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+## [v0.7.1] - 2023-03-11
+
+### Added
+
+- New argument for CLI `--extra-commands` to send through RCON the command you'd like to execute each time you kill someone.
+
+### Fixed
+
+- check() didn't work sometimes?
+
 ## [v0.6.1] - 2022-12-20
 
 ### Fixed

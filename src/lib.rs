@@ -56,6 +56,15 @@ pub struct Config {
     )]
     pub rcon_password: String,
 
+    #[serde(default)]
+    #[arg(
+        short = 'x', 
+        long = "extra-commands", 
+        default_value = "",
+        help("Extra commands (separated by ';') to send through rcon. Optional. eg: --extra-commands 'play_sound ...; ...'")
+    )]
+    pub extra_commands: String,
+
     #[arg(
         short = 'u', 
         long, 
@@ -99,11 +108,12 @@ pub struct Config {
     #[serde(default)]
     #[arg(
         short = 'w', 
-        long, num_args(0..), 
+        long, 
+        num_args(0..),
         value_delimiter = ',',
         help("A list of words to send through chat, the delimiter is ','. Optional. eg: --words hi, hello, \"what's up?\",...")
     )]
-    pub words: Option<Vec<String>>,
+    pub words: Vec<String>,
 
     #[serde(default)]
     #[cfg(target_family = "windows")]

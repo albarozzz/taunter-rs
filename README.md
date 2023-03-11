@@ -50,6 +50,7 @@ You may add extra settings to adjust your gameplay like:
 | use_soundpad    | boolean         | Only available in Windows, plays a sound when any user in usernames kill someone or username_victim, the sound used is in index 1, default to false                                                                 |
 | use_taunt       | boolean         | When any of usernames kills any enemy (or specified by username_victim) you'll taunt. default to true except in CLI.                                                                                                |
 | soundpad_path   | string          | Only available in Windows, Path to soundpad root folder, default to empty string                                                                                                                                    |
+| extra_commands  | string          | Extra commands to send through rcon. Default to empty string.                                                                                                                                                       |
 
 You'll need to put your favorite taunt to slot 1!
 

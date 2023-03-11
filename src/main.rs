@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         println!("-usercon -condebug -conclearlog");
         println!("Remember to save a file named autoexec.cfg in tf2folder/tf/cfg/ with the following content:");
         println!("ip 0.0.0.0");
-        println!("rcon_password \"{}\"", config.rcon_password);
+        println!("rcon_password {}", config.rcon_password);
         println!("net_start");
         println!("You can disable this warning in the config.json");
         println!("-------------");
@@ -103,8 +103,8 @@ async fn main() -> Result<()> {
                     if config.use_soundpad {
                         let _ = play_sound(&config.soundpad_path).await;
                     }
-                    if let Some(ref words) = config.words {
-                        let choosed: &str = words.choose(&mut rng).unwrap(); // select random response
+                    if !config.words.is_empty() {
+                        let choosed: &str = config.words.choose(&mut rng).unwrap(); // select random response
                         let _ = send_command(&mut conn, &format!("say {}", choosed)).await;
                     }
                     if config.use_spinbot {
@@ -115,6 +115,9 @@ async fn main() -> Result<()> {
                     }
                     if config.use_taunt {
                         let _ = send_command(&mut conn, "taunt 1").await; // select the first taunt
+                    }
+                    if !config.extra_commands.is_empty() {
+                        let _ = send_command(&mut conn, &config.extra_commands).await;
                     }
                 }
             }
