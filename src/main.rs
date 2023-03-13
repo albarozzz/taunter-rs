@@ -12,7 +12,16 @@ use taunter::{helper::*, Config, LastLines, Result};
 
 #[async_std::main]
 async fn main() -> Result<()> {
-    let mut config = Config::parse();
+    let args: usize = std::env::args().count();
+    let mut config: Config;
+    if args == 1 {
+        config = Config {
+            config: Some("config.json".to_string()),
+            ..Default::default()
+        };
+    } else {
+        config = Config::parse();
+    }
     if let Some(config_file) = config.config {
         let json_file: BufReader<File> = match File::open(Path::new(&config_file)) {
             Ok(file) => BufReader::new(file),
@@ -94,9 +103,9 @@ async fn main() -> Result<()> {
                 .unwrap_or(0);
 
             // the line of the latest kill to EOF
-            for (i, line) in lines_last_pos[find_line + 1..].iter().enumerate() {
+            for line in lines_last_pos[find_line + 1..].iter() {
                 if check(&config.usernames, &config.username_victim, line) {
-                    println!("Position: {}, Line: {}", i, line);
+                    println!("{}", line);
                     last_line = line.to_string();
 
                     #[cfg(target_family = "windows")]

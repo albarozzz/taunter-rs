@@ -180,14 +180,8 @@ impl LastLines {
     /// Gets the text of size chunk_size starting in start_pos (file_size - chunk_size) 
     pub fn get_text(mut self) -> Result<String> {
         let mut buffer = String::new();
-        match self.file.seek(SeekFrom::Start(self.start_pos)) {
-            Ok(_) => (),
-            Err(err) => return Err(Box::new(err))
-        }
-        match (&self.file).take(self.chunk_size).read_to_string(&mut buffer) {
-            Ok(_) => (),
-            Err(err) => return Err(Box::new(err))
-        }
+        self.file.seek(SeekFrom::Start(self.start_pos))?;
+        (&self.file).take(self.chunk_size).read_to_string(&mut buffer)?;
         Ok(buffer)
     }
 }
