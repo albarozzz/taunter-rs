@@ -54,6 +54,55 @@ You may add extra settings to adjust your gameplay like:
 
 You'll need to put your favorite taunt to slot 1!
 
+# Advanced behaviour
+
+You can customize what to do depending on the enemy you've killed. 
+Imagine this configuration:
+
+```json
+{
+    "rcon_password": "PASSWORD",
+    "tf2_path": "... /steamapps/common/Team Fortress 2/", // your tf2 path
+    "usernames": [
+        "YOUR STEAM USERNAME",
+        "YOUR USERNAME" // delete this if you don't want to taunt when your friend kill
+    ],
+    "username_victim": ["albarozzz", "Victor"],
+    "words": ["message1", "..."] // list of message(s) you want to send when any user in usernames kill someone, ONLY 1 MESSAGE WILL BE SENT RANDOMLY
+}
+```
+
+For example, let's say you killed Victor who is in your username_victim list and you really hate that guy and, for that reason, you must show your superiority.
+```json
+{
+    "when_killed_Victor_by_YOUR USERNAME": { // if THAT USERNAME from your usernames list kills Victor
+        "use_taunt": true,
+        "message_to_send": [
+            "you're so bad"
+        ],
+        "extra_commands": "say ez; say ez; say ez"
+    }
+}
+```
+This would use a taunt, send a randomly picked message and 3 extra ezs independently of your config.json.
+You can do something like this too if you want:
+```json
+{
+    "when_killed_Victor": { // if ANYONE from your usernames list kills Victor
+        "use_taunt": true,
+        "message_to_send": [
+            "you're so bad"
+        ],
+        "extra_commands": "say ez; say ez; say ez"
+    }
+}
+```
+
+You only need to create a file named "users.json" and pass the following argument:
+`./taunter --user-victim-config PATH_TO_USERS.JSON ...`
+Or:
+`./taunter -U PATH_TO_USERS.JSON ...`
+
 # Running/Using it as a CLI
 
 With version 0.4.0 you can now use the taunter with a Command Line Interface.

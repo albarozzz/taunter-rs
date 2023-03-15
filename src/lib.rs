@@ -18,6 +18,13 @@ pub struct Config {
     )]
     pub config: Option<String>,
 
+    #[arg(
+        short = 'U', 
+        long, 
+        help("Select the victim configuration file to read (JSON). eg: --user-victim-config users.json")
+    )]
+    pub user_victim_config: Option<String>,
+
     #[serde(default = "default_port")]
     #[arg(
         short = 'p', 
@@ -144,6 +151,20 @@ fn default_port() -> String {
 
 fn use_taunt() -> bool {
     true
+}
+
+#[derive(Deserialize, Default)]
+pub struct UsernameVictimConfig {
+    // mutually exclusive
+    #[serde(default)]
+    pub use_taunt: bool,
+    #[serde(default)]
+    pub use_spinbot: bool,
+    // -------------------
+    #[serde(default)]
+    pub message_to_send: Vec<String>,
+    #[serde(default)]
+    pub extra_commands: String
 }
 
 pub struct LastLines {

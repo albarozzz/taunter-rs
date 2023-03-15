@@ -9,9 +9,11 @@ mod testing {
         let usernames = vec!["./albarozzz".to_string()];
         let username_victim = vec!["Grim Bloody Fable".to_string()];
 
-        let result = check(&usernames, &username_victim, line);
+        let (result, username, victim) = check(&usernames, &username_victim, line);
 
         assert!(result);
+        assert_eq!(&username, "./albarozzz");
+        assert_eq!(&victim, "Grim Bloody Fable");
     }
 
     #[test]
@@ -20,8 +22,10 @@ mod testing {
         let usernames = vec!["./albarozzz".to_string()];
         let username_victim = vec!["Mentlegen".to_string()];
 
-        let result = check(&usernames, &username_victim, line);
+        let (result, username, victim) = check(&usernames, &username_victim, line);
 
         assert!(!result);
+        assert_eq!(&username, "./albarozzz");
+        assert_ne!(&victim, "Mentlegen");
     }
 }

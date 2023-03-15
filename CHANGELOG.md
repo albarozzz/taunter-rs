@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+## [v0.8.0] - 2023-03-15
+
+### Added
+
+- New conditional behaviour to customize what to do when a certain enemy is killed. (Check README)
+
 ## [v0.7.1] - 2023-03-11
 
 ### Added

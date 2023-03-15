@@ -1,0 +1,8 @@
+{
+    "when_killed_VICTIM_by_USERNAME": {
+        "use_taunt": false,
+        "use_spinbot": false,
+        "message_to_send": [],
+        "extra_commands": ""
+    }
+}

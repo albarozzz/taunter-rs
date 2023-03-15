@@ -5,7 +5,11 @@ use regex::Regex;
 #[cfg(target_family = "windows")]
 use std::process::Command;
 
-pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bool {
+pub fn check(
+    usernames: &[String],
+    username_victim: &[String],
+    line: &str,
+) -> (bool, String, String) {
     lazy_static! {
         static ref RE: Regex = Regex::new(
             r"(\d\d/\d\d/\d\d\d\d) - (\d\d:\d\d:\d\d): (?P<user>.*) killed (?P<victim>.*) with (.*)"
@@ -17,27 +21,27 @@ pub fn check(usernames: &[String], username_victim: &[String], line: &str) -> bo
     // 03/11/2023 - 01:55:04: ./albarozzz killed Mentlegen with force_a_nature.
     let caps = match RE.captures(line) {
         Some(i) => i,
-        None => return false,
+        None => return (false, "".to_string(), "".to_string()),
     };
 
     let username = if let Some(i) = caps.name("user") {
-        i.as_str()
+        i.as_str().to_owned()
     } else {
-        return false;
+        return (false, "".to_string(), "".to_string());
     };
 
     let victim = if let Some(i) = caps.name("victim") {
-        i.as_str()
+        i.as_str().to_owned()
     } else {
-        return false;
+        return (false, "".to_string(), "".to_string());
     };
 
-    if (!usernames.contains(&username.to_owned()) && !usernames.is_empty())
-        || (!username_victim.contains(&victim.to_owned()) && !username_victim.is_empty())
+    if (!usernames.contains(&username) && !usernames.is_empty())
+        || (!username_victim.contains(&victim) && !username_victim.is_empty())
     {
-        return false;
+        return (false, username, victim);
     }
-    true
+    (true, username, victim)
 }
 
 pub async fn send_command(conn: &mut Connection, command: &str) -> Result<()> {
