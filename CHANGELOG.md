@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+## [v0.8.1] - 2023-03-15
+
+### Added
+
+- README, LICENSE and users.json now inside the archives in releases! 
+
 ## [v0.8.0] - 2023-03-15
 
 ### Added
