@@ -2,8 +2,9 @@ use super::Result;
 use lazy_static::lazy_static;
 use rcon::Connection;
 use regex::Regex;
+use std::fs::File;
 #[cfg(target_family = "windows")]
-use std::process::Command;
+use std::io::Write;
 
 pub fn check(
     usernames: &[String],
@@ -51,18 +52,14 @@ pub async fn send_command(conn: &mut Connection, command: &str) -> Result<()> {
 }
 
 #[cfg(target_family = "windows")]
-pub async fn play_sound(soundpad_path: &str) -> Result<()> {
-    let _ = Command::new("cmd")
-        .current_dir(soundpad_path)
-        .args(["/C", "Soundpad", "-rc", "DoPlaySound(1)"])
-        .spawn()
-        .expect("command invoking soundpad failed!");
+pub async fn play_sound(pipe: &mut File) -> Result<()> {
+    let _ = pipe.write(b"DoPlaySoundFromCategory(1, 1)")?;
 
     Ok(())
 }
 
 #[cfg(target_family = "unix")]
-pub async fn play_sound(_soundpad_path: &str) -> Result<()> {
+pub async fn play_sound(_pipe: &mut File) -> Result<()> {
     // TODO: IMPLEMENTATION TO SOUNDUX FOR LINUX USERS
-    Ok(())
+    todo!()
 }

@@ -49,14 +49,13 @@ You may add extra settings to adjust your gameplay like:
 | use_spinbot     | boolean         | Uses +left to spin for one second after any user in usernames kill someone (or username_victim), default to false, overrides taunting and you can customize its rotational speed with cl_yawspeed, default to false |
 | use_soundpad    | boolean         | Only available in Windows, plays a sound when any user in usernames kill someone or username_victim, the sound used is in index 1, default to false                                                                 |
 | use_taunt       | boolean         | When any of usernames kills any enemy (or specified by username_victim) you'll taunt. default to true except in CLI.                                                                                                |
-| soundpad_path   | string          | Only available in Windows, Path to soundpad root folder, default to empty string                                                                                                                                    |
 | extra_commands  | string          | Extra commands to send through rcon. Default to empty string.                                                                                                                                                       |
 
 You'll need to put your favorite taunt to slot 1!
 
 # Advanced behaviour
 
-You can customize what to do depending on the enemy you've killed. 
+You can customize what to do depending on the enemy you've killed.
 Imagine this configuration:
 
 ```json
@@ -73,6 +72,7 @@ Imagine this configuration:
 ```
 
 For example, let's say you killed Victor who is in your username_victim list and you really hate that guy and, for that reason, you must show your superiority.
+
 ```json
 {
     "when_killed_Victor_by_YOUR USERNAME": { // if THAT USERNAME from your usernames list kills Victor
@@ -84,8 +84,10 @@ For example, let's say you killed Victor who is in your username_victim list and
     }
 }
 ```
+
 This would use a taunt, send a randomly picked message and 3 extra ezs independently of your config.json.
 You can do something like this too if you want:
+
 ```json
 {
     "when_killed_Victor": { // if ANYONE from your usernames list kills Victor

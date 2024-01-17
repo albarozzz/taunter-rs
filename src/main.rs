@@ -43,6 +43,25 @@ async fn main() -> Result<()> {
         config = _config;
     };
 
+    #[cfg(target_family = "windows")]
+    let mut soundpad_pipe: Option<File> = match File::options()
+        .write(true)
+        .read(true)
+        .open("\\\\.\\pipe\\sp_remote_control")
+    {
+        Ok(file) => {
+            if config.use_soundpad {
+                Some(file)
+            } else {
+                None
+            }
+        }
+        Err(_) => {
+            println!("Couldn't connect to soundpad named pipe");
+            None
+        }
+    };
+
     if let Some(config_file) = config.user_victim_config {
         let json_file: BufReader<File> = match File::open(Path::new(&config_file)) {
             Ok(file) => BufReader::new(file),
@@ -135,8 +154,8 @@ async fn main() -> Result<()> {
                     last_line = line.to_string();
 
                     #[cfg(target_family = "windows")]
-                    if config.use_soundpad {
-                        let _ = play_sound(&config.soundpad_path).await;
+                    if config.use_soundpad && !soundpad_pipe.is_none() {
+                        let _ = play_sound(&mut soundpad_pipe.as_mut().unwrap()).await;
                     }
 
                     let mut individual_configuration: UsernameVictimConfig = Default::default();
@@ -196,7 +215,7 @@ async fn main() -> Result<()> {
                     // ------
                 }
             }
-            task::sleep(Duration::from_millis(125)).await;
+            task::sleep(Duration::from_millis(64)).await;
         }
     }
 }

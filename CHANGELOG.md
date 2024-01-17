@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+## [v0.9.0] - 2024-01-17
+
+### Added
+
+- Support for soundpad's remote control api (named pipe)
+
+### Changed
+
+- It's not longer necessary to specify `soundpad_path` or `--soundpad-path`
+
 ## [v0.8.1] - 2023-03-15
 
 ### Added

@@ -9,6 +9,7 @@ pub mod helper;
 pub mod tests;
 
 #[derive(Deserialize, Default, Parser)]
+#[command(author, version, about, long_about = None)]
 pub struct Config {
     #[arg(
         short, 
@@ -132,16 +133,6 @@ pub struct Config {
         requires("soundpad_path")
     )]
     pub use_soundpad: bool,
-
-    #[serde(default)]
-    #[cfg(target_family = "windows")]
-    #[arg(
-        short = 'l', 
-        long = "soundpad-path", 
-        default_value = "",
-        help("Path to soundpad root directory. Optional. eg: --soundpad-path")
-    )]
-    pub soundpad_path: String,
 
 }
 
