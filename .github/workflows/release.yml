@@ -35,7 +35,7 @@ jobs:
       - run: echo "PATH=$GITHUB_WORKSPACE/.lua/bin:$PATH" >> $GITHUB_ENV
       - run: echo "PATH=$GITHUB_WORKSPACE/.lua/lib:$PATH" >> $GITHUB_ENV
       - run: echo "LUA_LIB=$GITHUB_WORKSPACE/.lua/lib" >> $GITHUB_ENV
-      - run: echo "LUA_LIB_NAME=lua5.4.pc" >> $GITHUB_ENV
+      - run: echo "LUA_LIB_NAME=lua5.4" >> $GITHUB_ENV
       - run: echo "LUA_NO_PKG_CONFIG=1" >> $GITHUB_ENV
       #- run: ln -s $GITHUB_WORKSPACE/.lua/lib/lua5.4.pc $HOME/.local/lib/pkgconfig/lua5.4.pc
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
