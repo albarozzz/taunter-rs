@@ -39,12 +39,13 @@ jobs:
       - run: echo "LUA_NO_PKG_CONFIG=1" >> $GITHUB_ENV
       #- run: ln -s $GITHUB_WORKSPACE/.lua/lib/lua5.4.pc $HOME/.local/lib/pkgconfig/lua5.4.pc
       - if: matrix.os == 'windows-latest'
-        run: rm "C:/Program Files/Git/usr/bin/link.exe"
-        run: echo "PATH=$GITHUB_WORKSPACE/.lua/bin:$PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
-        run: echo "PATH=$GITHUB_WORKSPACE/.lua/lib:$PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
-        run: echo "LUA_LIB=$GITHUB_WORKSPACE/.lua/lib" | Out-File -FilePath $env:GITHUB_ENV -Append
-        run: echo "LUA_LIB_NAME=lua" | Out-File -FilePath $env:GITHUB_ENV -Append
-        run: echo "LUA_NO_PKG_CONFIG=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+        run: |
+          rm "C:/Program Files/Git/usr/bin/link.exe"
+          echo "PATH=$GITHUB_WORKSPACE/.lua/bin:$PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "PATH=$GITHUB_WORKSPACE/.lua/lib:$PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "LUA_LIB=$GITHUB_WORKSPACE/.lua/lib" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "LUA_LIB_NAME=lua" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "LUA_NO_PKG_CONFIG=1" | Out-File -FilePath $env:GITHUB_ENV -Append
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
         with:
           # (required)
