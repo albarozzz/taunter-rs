@@ -26,11 +26,15 @@ jobs:
           - macos-latest
           - windows-latest
     runs-on: ${{ matrix.os }}
+    env:
+      Greeting: Hello
     steps:
       - uses: ilammy/msvc-dev-cmd@v1
       - uses: leafo/gh-actions-lua@v10
         with:
           luaVersion: "5.4"
+      - run: |
+        echo "$GITHUB_WORKSPACE/.lua/lib" >> $GITHUB_PATH
       - uses: actions/checkout@v3
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
         with:
