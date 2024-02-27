@@ -32,8 +32,8 @@ jobs:
       - uses: leafo/gh-actions-lua@v10
         with:
           luaVersion: "5.4"
-      - run: echo "$GITHUB_WORKSPACE/.lua/bin" >> $PATH
-      - run: echo "$GITHUB_WORKSPACE/.lua/lib" >> $PATH
+      - run: echo "PATH=$GITHUB_WORKSPACE/.lua/bin:$PATH" >> $GITHUB_ENV
+      - run: echo "PATH=$GITHUB_WORKSPACE/.lua/lib:$PATH" >> $GITHUB_ENV
       - run: ln -s $GITHUB_WORKSPACE/.lua/lib/lua5.4.pc $HOME/.local/lib/pkgconfig/lua5.4.pc
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
         with:
