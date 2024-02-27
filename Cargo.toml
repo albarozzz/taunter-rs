@@ -1,6 +1,6 @@
 [package]
 name = "taunter"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 license = "MIT"
 
@@ -16,6 +16,8 @@ clap = { version = "4.0.27", features = ["derive"] }
 rand = "0.8.4"
 regex = "1.7.0"
 lazy_static = "1.4.0"
+discord-presence = "1.0.0"
+mlua = { version = "0.9.5", features = ["async", "lua54"] }
 
 [build-dependencies]
 winres = "0.1"

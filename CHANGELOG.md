@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+## [v0.10.0] - 2024-02-27
+
+### Added 
+- Lua engine for custom code for each kill! `--use-custom-lua`
+- Discord RPC integration with `--use-discord-rpc`
+
 ## [v0.9.0] - 2024-01-17
 
 ### Added

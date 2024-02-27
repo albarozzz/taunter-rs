@@ -1,47 +1,35 @@
 use async_std::task;
-use clap::Parser;
+use discord_presence::Client;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rcon::Connection;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::Read;
 use std::path::Path;
 use std::thread;
-use std::time::Duration;
-use taunter::{helper::*, Config, LastLines, Result, UsernameVictimConfig};
+use std::time::{Duration, SystemTime};
+use taunter::{helper::*, lua, Config, LastLines, Result, UsernameVictimConfig};
 
 #[async_std::main]
 async fn main() -> Result<()> {
-    let args: usize = std::env::args().count();
-    let mut config: Config;
-    let user_victim_config: serde_json::Value;
-
-    // if arguments were not passed try to load config.json
-    if args == 1 {
-        config = Config {
-            config: Some("config.json".to_string()),
-            ..Default::default()
-        };
-    } else {
-        config = Config::parse();
-    }
-
-    if let Some(config_file) = config.config {
-        let json_file: BufReader<File> = match File::open(Path::new(&config_file)) {
-            Ok(file) => BufReader::new(file),
-            Err(why) => {
-                panic!("Error opening file config.json: {}", why);
-            }
-        };
-
-        let _config: Config = match serde_json::from_reader(json_file) {
-            Ok(json) => json,
-            Err(why) => {
-                panic!("Error parsing file config.json: {}", why);
-            }
-        };
-        config = _config;
+    let config: Config = Config::new();
+    let address: &str = &format!("127.0.0.1:{}", config.port);
+    let user_victim_config: serde_json::Value = read_victim_config(&config);
+    let unix_seconds = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        Ok(n) => n.as_secs(),
+        Err(_) => panic!("Error SystemTime before UNIX EPOCH!"),
     };
+    let mut count_deaths: u32 = 0;
+    let mut code: String = String::new();
+
+    if config.use_custom_lua {
+        let _ = match File::open("custom.lua") {
+            Ok(mut f) => f.read_to_string(&mut code),
+            Err(_) => {
+                panic!("file custom.lua couldn't be loaded!");
+            }
+        };
+    }
 
     #[cfg(target_family = "windows")]
     let mut soundpad_pipe: Option<File> = match File::options()
@@ -62,26 +50,18 @@ async fn main() -> Result<()> {
         }
     };
 
-    if let Some(config_file) = config.user_victim_config {
-        let json_file: BufReader<File> = match File::open(Path::new(&config_file)) {
-            Ok(file) => BufReader::new(file),
-            Err(why) => {
-                panic!("Error opening file users.json: {}", why);
-            }
-        };
+    let mut rpc = Client::new(1198369423866744842);
 
-        let _config: serde_json::Value = match serde_json::from_reader(json_file) {
-            Ok(json) => json,
-            Err(why) => {
-                panic!("Error parsing file users.json: {}", why);
-            }
-        };
-        user_victim_config = _config;
-    } else {
-        user_victim_config = Default::default();
-    };
+    if config.use_discord_rpc {
+        let _ = rpc.on_ready(|_| {
+            println!("Discord Rich Presence Ready!");
+        });
 
-    let address: &str = &format!("127.0.0.1:{}", config.port);
+        println!("Waiting for Discord Rich Presence...");
+        rpc.start();
+        rpc.block_until_event(discord_presence::Event::Ready)?;
+        println!("Connected to Discord Rich Presence!")
+    }
 
     if !config.ignore_warning {
         println!("-------------");
@@ -119,14 +99,14 @@ async fn main() -> Result<()> {
         let mut last_line: String = String::from("-");
         loop {
             let file = match File::open(&console_log) {
-                Err(why) => panic!("couldn't open console log: {}", why),
+                Err(why) => panic!("Couldn't open console log: {}", why),
                 Ok(file) => file,
             };
             let ll = LastLines::new(file);
             let buffer = match ll.get_text() {
                 Ok(ok) => ok,
                 Err(err) => {
-                    println!("Console.log with unvalid UTF-8 or seeking failed: {}", err);
+                    println!("Console.log with invalid UTF-8 or seeking failed: {}", err);
                     task::sleep(Duration::from_secs(2)).await;
                     break;
                 }
@@ -137,7 +117,7 @@ async fn main() -> Result<()> {
                 task::sleep(Duration::from_secs(1)).await;
                 break;
             }
-            let last_pos: usize = lines.len() - 6; // the fifth last line
+            let last_pos: usize = lines.len() - 12; // the fifth last line
             let lines_last_pos: &[&str] = &lines[last_pos..];
             // finds the index of the latest kill
             let find_line: usize = lines_last_pos
@@ -147,10 +127,28 @@ async fn main() -> Result<()> {
 
             // the line of the latest kill to EOF
             for line in lines_last_pos[find_line + 1..].iter() {
-                let (is_killed, username, victim) =
-                    check(&config.usernames, &config.username_victim, line);
+                let (username, victim) = get_usernames(line);
+
+                let is_killed = match config.use_custom_lua {
+                    true => lua::exec_lua_code(&mut conn, &code, &username, &victim).await?,
+
+                    false => check(
+                        &config.usernames,
+                        &config.username_victim,
+                        &username,
+                        &victim,
+                    ),
+                };
+
                 if is_killed {
+                    count_deaths += 1;
                     println!("{}", line);
+                    if config.use_discord_rpc
+                        && !update_rpc(&mut rpc, &username, &victim, count_deaths, unix_seconds)
+                            .await
+                    {
+                        println!("RPC failed!");
+                    }
                     last_line = line.to_string();
 
                     #[cfg(target_family = "windows")]
@@ -215,7 +213,7 @@ async fn main() -> Result<()> {
                     // ------
                 }
             }
-            task::sleep(Duration::from_millis(64)).await;
+            task::sleep(Duration::from_millis(32)).await;
         }
     }
 }

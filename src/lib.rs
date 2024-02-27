@@ -2,23 +2,16 @@ use clap::Parser;
 use serde::Deserialize;
 use std::error::Error;
 use std::fs::File;
-use std::io::{Seek, SeekFrom, Read};
-
+use std::io::{Seek, SeekFrom, Read, BufReader};
+use std::path::Path;
 pub mod helper;
+pub mod lua;
 #[cfg(test)]
 pub mod tests;
 
 #[derive(Deserialize, Default, Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Config {
-    #[arg(
-        short, 
-        long, 
-        required_unless_present_any(["tf2_path", "rcon_password", "usernames"]),
-        help("Select the configuration file to read (JSON). eg: --config config.json")
-    )]
-    pub config: Option<String>,
-
     #[arg(
         short = 'U', 
         long, 
@@ -49,7 +42,7 @@ pub struct Config {
         long = "tf2-path",
         required = false,
         default_value = "",
-        required_unless_present("config"),
+        //required_unless_present("config"),
         help("TF2 root directory. This parameter is required. eg: --tf2-path ...")
     )]
     pub tf2_path: String,
@@ -59,7 +52,7 @@ pub struct Config {
         long = "rcon-password",
         required = false,
         default_value = "",
-        required_unless_present("config"),
+        //required_unless_present("config"),
         help("RCON password. This parameter is required. eg: --rcon-password ...")
     )]
     pub rcon_password: String,
@@ -80,7 +73,7 @@ pub struct Config {
         value_delimiter = ',',
         default_value = "", 
         required = false, 
-        required_unless_present("config"),
+        //required_unless_present("config"),
         help("List of usernames, the delimiter is ','. This parameter is required. eg: --usernames user1, user2, \"user with spaces\", ...")
     )]
     pub usernames: Vec<String>,
@@ -124,6 +117,24 @@ pub struct Config {
     pub words: Vec<String>,
 
     #[serde(default)]
+    #[arg(
+        short = 'o', 
+        long = "use-discord-rpc", 
+        default_value_t = false,
+        help("Flag to use discord rich presence. Optional. eg: --use-discord-rpc")
+    )]
+    pub use_discord_rpc: bool,
+
+    #[serde(default)]
+    #[arg(
+        short = 'l', 
+        long = "use-custom-lua", 
+        default_value_t = false,
+        help("Flag to use lua custom code. Optional. eg: --use-custom-lua")
+    )]
+    pub use_custom_lua: bool,
+
+    #[serde(default)]
     #[cfg(target_family = "windows")]
     #[arg(
         short = 'd', 
@@ -142,6 +153,33 @@ fn default_port() -> String {
 
 fn use_taunt() -> bool {
     true
+}
+
+impl Config {
+    pub fn new() -> Self {
+        
+        if std::env::args().count() != 1 {
+            println!("Parsing arguments...");
+            return Config::parse();
+        }
+
+        // if arguments were not passed try to load config.json
+        let json_file: BufReader<File> = match File::open(Path::new("config.json")) {
+            Ok(file) => BufReader::new(file),
+            Err(why) => {
+                panic!("Error opening file config.json: {}", why);
+            }
+        };
+
+        let _config: Config = match serde_json::from_reader(json_file) {
+            Ok(json) => json,
+            Err(why) => {
+                panic!("Error parsing file config.json: {}", why);
+            }
+        };
+        _config
+    }
+
 }
 
 #[derive(Deserialize, Default)]
