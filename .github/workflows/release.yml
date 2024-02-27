@@ -39,7 +39,7 @@ jobs:
       #- run: ln -s $GITHUB_WORKSPACE/.lua/lib/lua5.4.pc $HOME/.local/lib/pkgconfig/lua5.4.pc
       - uses: ilammy/msvc-dev-cmd@v1.13.0
       - if: matrix.os == 'windows-latest'
-        run: rm /usr/bin/link
+        run: rm "C:/Program Files/Git/usr/bin/link.exe"
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
         with:
           # (required)
