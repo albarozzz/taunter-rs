@@ -27,16 +27,14 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: ilammy/msvc-dev-cmd@v1
-      #- uses: leafo/gh-actions-lua@v10
-      #  with:
-      #    luaVersion: "5.4"
-      - uses: ConorMacBride/install-package@v1
-        with:
-          brew: lua@5.4
-          apt: lua5.4
-          choco: lua54
       - uses: actions/checkout@v3
+      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+      - run: echo "$GITHUB_WORKSPACE/.lua/bin" >> $PATH
+      - run: echo "$GITHUB_WORKSPACE/.lua/lib" >> $PATH
+      - run: ln -s $GITHUB_WORKSPACE/.lua/lib/lua5.4.pc $HOME/.local/lib/pkgconfig/lua5.4.pc
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
         with:
           # (required)
