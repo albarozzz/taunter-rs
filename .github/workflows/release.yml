@@ -41,9 +41,9 @@ jobs:
       - if: matrix.os == 'windows-latest'
         run: |
           rm "C:/Program Files/Git/usr/bin/link.exe"
-          echo "PATH=$GITHUB_WORKSPACE/.lua/bin:$PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "PATH=$GITHUB_WORKSPACE/.lua/lib:$PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "LUA_LIB=$GITHUB_WORKSPACE/.lua/lib" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "Path=$GITHUB_WORKSPACE/.lua/bin;$env:Path" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "Path=$GITHUB_WORKSPACE/.lua/lib;$env:Path" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "LUA_LIB=$env:GITHUB_WORKSPACE/.lua/lib" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "LUA_LIB_NAME=lua" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "LUA_NO_PKG_CONFIG=1" | Out-File -FilePath $env:GITHUB_ENV -Append
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
