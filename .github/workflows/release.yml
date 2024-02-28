@@ -46,7 +46,7 @@ jobs:
           echo "LIBPATH=$env:GITHUB_WORKSPACE\.lua\lib;$env:LIBPATH" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "LIB=$env:GITHUB_WORKSPACE\.lua\lib;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "LUA_LIB=$env:GITHUB_WORKSPACE\.lua\lib" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "LUA_LIB_NAME=lua" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "LUA_LIB_NAME=lua54" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "LUA_NO_PKG_CONFIG=1" | Out-File -FilePath $env:GITHUB_ENV -Append
       - uses: taiki-e/upload-rust-binary-action@v1.10.0
         with:
