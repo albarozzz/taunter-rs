@@ -84,7 +84,7 @@ async fn main() -> Result<()> {
 
     let mut rng = thread_rng();
     loop {
-        let mut conn: Connection = match Connection::builder()
+        let mut _interface_conn: Connection = match Connection::builder()
             .connect(address, &config.rcon_password)
             .await
         {
@@ -96,6 +96,8 @@ async fn main() -> Result<()> {
                 continue;
             }
         };
+        let mut conn = lua::RconWrapper::new(_interface_conn);
+
         let mut last_line: String = String::from("-");
         loop {
             let file = match File::open(&console_log) {
@@ -128,6 +130,10 @@ async fn main() -> Result<()> {
             // the line of the latest kill to EOF
             for line in lines_last_pos[find_line + 1..].iter() {
                 let (username, victim) = get_usernames(line);
+
+                if username.is_empty() || victim.is_empty() {
+                    continue;
+                }
 
                 let is_killed = match config.use_custom_lua {
                     true => lua::exec_lua_code(&mut conn, &code, &username, &victim).await?,
@@ -173,23 +179,27 @@ async fn main() -> Result<()> {
                     // if the victim is 'configured' on users.json make special commands for them.
                     if is_configured {
                         if individual_configuration.use_taunt {
-                            let _ = send_command(&mut conn, "taunt 1").await;
+                            let _ = conn.send_command("taunt 1").await;
+                            //let _ = send_command(&mut conn, "taunt 1").await;
                         } else if individual_configuration.use_spinbot {
-                            let _ = send_command(&mut conn, "+left").await;
-                            task::sleep(Duration::from_millis(1000)).await;
-                            let _ = send_command(&mut conn, "-left").await;
+                            let _ = conn.send_command("+left").await;
+                            conn.wait(1000).await;
+                            let _ = conn.send_command("-left").await;
+                            //let _ = send_command(&mut conn, "+left").await;
+                            //task::sleep(Duration::from_millis(1000)).await;
+                            //let _ = send_command(&mut conn, "-left").await;
                         }
                         if !individual_configuration.message_to_send.is_empty() {
                             let choosed: &str = individual_configuration
                                 .message_to_send
                                 .choose(&mut rng)
                                 .unwrap(); // select random response
-                            let _ = send_command(&mut conn, &format!("say {}", choosed)).await;
+                            let _ = conn.send_command(&format!("say {}", choosed)).await;
                         }
                         if !individual_configuration.extra_commands.is_empty() {
-                            let _ =
-                                send_command(&mut conn, &individual_configuration.extra_commands)
-                                    .await;
+                            let _ = conn
+                                .send_command(&individual_configuration.extra_commands)
+                                .await;
                         }
                         continue;
                     }
@@ -198,17 +208,18 @@ async fn main() -> Result<()> {
                     // If the victim is not 'configured' on users.json proceed with generic
                     if !config.words.is_empty() {
                         let choosed: &str = config.words.choose(&mut rng).unwrap(); // select random response
-                        let _ = send_command(&mut conn, &format!("say {}", choosed)).await;
+                        let _ = conn.send_command(&format!("say {}", choosed)).await;
                     }
                     if config.use_taunt {
-                        let _ = send_command(&mut conn, "taunt 1").await; // select the first taunt
+                        let _ = conn.send_command("taunt 1").await; // select the first taunt
                     } else if config.use_spinbot {
-                        let _ = send_command(&mut conn, "+left").await;
-                        task::sleep(Duration::from_millis(1000)).await;
-                        let _ = send_command(&mut conn, "-left").await;
+                        let _ = conn.send_command("+left").await;
+                        //task::sleep(Duration::from_millis(1000)).await;
+                        conn.wait(1000).await;
+                        let _ = conn.send_command("-left").await;
                     }
                     if !config.extra_commands.is_empty() {
-                        let _ = send_command(&mut conn, &config.extra_commands).await;
+                        let _ = conn.send_command(&config.extra_commands).await;
                     }
                     // ------
                 }

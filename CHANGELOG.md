@@ -1,4 +1,3 @@
-
 # Change Log
 All notable changes to this project will be documented in this file.
  
@@ -6,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
+
+## [v0.11.0] - 2024-03-06
+
+### Changed
+- Improved the api to the lua engine! Now you can use `tf2:say()`, `tf2:taunt()`, `tf2:send_command()` and `tf2:wait()`
 
 ## [v0.10.0] - 2024-02-27
 

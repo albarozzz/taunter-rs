@@ -60,7 +60,7 @@ jobs:
           # [default value: windows]
           # [possible values: all, unix, windows, none]
           zip: windows
-          include: assets/config.json,assets/users.json,README.md,LICENSE
+          include: assets/config.json,assets/users.json,assets/custom.lua,README.md,LICENSE
         env:
           # (required)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
