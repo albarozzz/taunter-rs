@@ -2,8 +2,39 @@ use mlua::{Function, Lua, UserData};
 
 use crate::Result;
 use async_std::task;
+use core::panic;
 use rcon::Connection;
+use std::fs::File;
+use std::io::Write;
 use std::time::Duration;
+
+pub struct SoundPadPipe {
+    pub pipe: File,
+}
+
+impl SoundPadPipe {
+    pub fn new(f: Option<File>) -> Result<Self> {
+        match f {
+            Some(sp) => Ok(Self { pipe: sp }),
+            None => Err("File not found!".into()),
+        }
+    }
+
+    pub fn write(&mut self, command: &str) -> Result<()> {
+        let _ = self.pipe.write(command.as_bytes())?;
+        Ok(())
+    }
+}
+
+impl UserData for SoundPadPipe {
+    fn add_methods<'lua, M: mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method_mut("write", |_, this: &mut SoundPadPipe, command: String| {
+            this.write(&command)
+                .unwrap_or_else(|_| println!("Error: soundpad pipe is not available!"));
+            Ok(())
+        });
+    }
+}
 
 pub struct RconWrapper {
     pub conn: Connection,
@@ -24,7 +55,7 @@ impl RconWrapper {
         let _ = self.send_command(format!("say {}", &string)).await;
     }
 
-    pub async fn taunt<S: Into<u32> + std::fmt::Display>(&mut self, num: S) -> Result<String> {
+    pub async fn taunt(&mut self, num: u32) -> Result<String> {
         let resul = self.send_command(&format!("taunt {}", num)).await?;
         Ok(resul)
     }
@@ -69,6 +100,7 @@ impl UserData for RconWrapper {
 
 pub async fn exec_lua_code(
     conn: &mut RconWrapper,
+    pipe: &mut Option<SoundPadPipe>,
     code: &str,
     username: &str,
     username_victim: &str,
@@ -76,17 +108,30 @@ pub async fn exec_lua_code(
     let lua = Lua::new();
 
     let mut was_killed: bool = false;
+
     lua.scope(|scope| {
         let globals = lua.globals();
         globals.set("tf2", scope.create_userdata_ref_mut(conn)?)?;
 
+        globals.set("OS", cfg!(target_family))?;
+
+        if pipe.is_some() {
+            globals.set(
+                "soundpad",
+                scope.create_userdata_ref_mut(pipe.as_mut().unwrap())?,
+            )?;
+        }
+
         // load the custom lua code and execute it
         lua.load(code)
             .set_name("Custom code and callbacks")
-            .exec()?;
+            .exec()
+            .unwrap_or_else(|err| panic!("{}", err.to_string()));
 
         // gets the callback we are going to call hehe
-        let on_kill: Function = globals.get("OnKillCallback")?;
+        let on_kill: Function = globals
+            .get("OnKillCallback")
+            .unwrap_or_else(|err| panic!("{}", err.to_string()));
 
         // hopefully username is you and username_victim is your, well, victim.
         was_killed = task::block_on(on_kill.call_async::<_, bool>((username, username_victim)))

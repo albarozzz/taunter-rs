@@ -31,19 +31,20 @@ async fn main() -> Result<()> {
         };
     }
 
-    #[cfg(target_family = "windows")]
-    let mut soundpad_pipe: Option<File> = match File::options()
+    let soundpad_f = match File::options()
         .write(true)
         .read(true)
-        .open("\\\\.\\pipe\\sp_remote_control")
+        .open(r"\\\\.\\pipe\\sp_remote_control")
     {
-        Ok(file) => {
-            if config.use_soundpad {
-                Some(file)
-            } else {
-                None
-            }
+        Ok(f) => Some(f),
+        Err(_) => {
+            println!("Couldn't connect to soundpad named pipe");
+            None
         }
+    };
+
+    let mut soundpad_pipe: Option<lua::SoundPadPipe> = match lua::SoundPadPipe::new(soundpad_f) {
+        Ok(file) => Some(file),
         Err(_) => {
             println!("Couldn't connect to soundpad named pipe");
             None
@@ -136,7 +137,10 @@ async fn main() -> Result<()> {
                 }
 
                 let is_killed = match config.use_custom_lua {
-                    true => lua::exec_lua_code(&mut conn, &code, &username, &victim).await?,
+                    true => {
+                        lua::exec_lua_code(&mut conn, &mut soundpad_pipe, &code, &username, &victim)
+                            .await?
+                    }
 
                     false => check(
                         &config.usernames,
@@ -159,7 +163,10 @@ async fn main() -> Result<()> {
 
                     #[cfg(target_family = "windows")]
                     if config.use_soundpad && !soundpad_pipe.is_none() {
-                        let _ = play_sound(&mut soundpad_pipe.as_mut().unwrap()).await;
+                        let _ = soundpad_pipe
+                            .as_mut()
+                            .unwrap()
+                            .write("DoPlaySoundFromCategory(1, 1)");
                     }
 
                     let mut individual_configuration: UsernameVictimConfig = Default::default();
@@ -179,7 +186,7 @@ async fn main() -> Result<()> {
                     // if the victim is 'configured' on users.json make special commands for them.
                     if is_configured {
                         if individual_configuration.use_taunt {
-                            let _ = conn.send_command("taunt 1").await;
+                            let _ = conn.taunt(1).await;
                             //let _ = send_command(&mut conn, "taunt 1").await;
                         } else if individual_configuration.use_spinbot {
                             let _ = conn.send_command("+left").await;
@@ -194,7 +201,7 @@ async fn main() -> Result<()> {
                                 .message_to_send
                                 .choose(&mut rng)
                                 .unwrap(); // select random response
-                            let _ = conn.send_command(&format!("say {}", choosed)).await;
+                            let _ = conn.say(choosed).await;
                         }
                         if !individual_configuration.extra_commands.is_empty() {
                             let _ = conn
@@ -208,10 +215,10 @@ async fn main() -> Result<()> {
                     // If the victim is not 'configured' on users.json proceed with generic
                     if !config.words.is_empty() {
                         let choosed: &str = config.words.choose(&mut rng).unwrap(); // select random response
-                        let _ = conn.send_command(&format!("say {}", choosed)).await;
+                        let _ = conn.say(choosed).await;
                     }
                     if config.use_taunt {
-                        let _ = conn.send_command("taunt 1").await; // select the first taunt
+                        let _ = conn.taunt(1).await; // select the first taunt
                     } else if config.use_spinbot {
                         let _ = conn.send_command("+left").await;
                         //task::sleep(Duration::from_millis(1000)).await;

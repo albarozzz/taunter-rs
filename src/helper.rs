@@ -1,8 +1,8 @@
-use super::Result;
+#[cfg(target_family = "windows")]
+use crate::lua;
 use crate::Config;
 use discord_presence::Client;
 use lazy_static::lazy_static;
-use rcon::Connection;
 use regex::Regex;
 use std::fs::File;
 use std::io::BufReader;
@@ -13,7 +13,7 @@ use std::path::Path;
 pub fn get_usernames(line: &str) -> (String, String) {
     lazy_static! {
         static ref RE: Regex = Regex::new(
-            r"(\d\d/\d\d/\d\d\d\d) - (\d\d:\d\d:\d\d): (?P<user>.*) killed (?P<victim>.*) with (.*)"
+            r"^(\d\d/\d\d/\d\d\d\d) - (\d\d:\d\d:\d\d): (?P<user>.*) killed (?P<victim>.*) with (.*)$"
         )
         .unwrap();
     }
@@ -88,23 +88,4 @@ pub fn read_victim_config(config: &Config) -> serde_json::Value {
         return _config;
     }
     Default::default()
-}
-
-pub async fn send_command(conn: &mut Connection, command: &str) -> Result<String> {
-    // TODO: EXECUTE CFG files to customize what to do
-    let resul = conn.cmd(command).await?;
-    Ok(resul)
-}
-
-#[cfg(target_family = "windows")]
-pub async fn play_sound(pipe: &mut File) -> Result<()> {
-    let _ = pipe.write(b"DoPlaySoundFromCategory(1, 1)")?;
-
-    Ok(())
-}
-
-#[cfg(target_family = "unix")]
-pub async fn play_sound(_pipe: &mut File) -> Result<()> {
-    // TODO: IMPLEMENTATION TO SOUNDUX FOR LINUX USERS
-    todo!()
 }

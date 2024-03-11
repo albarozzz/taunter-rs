@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
  
 ## [Unreleased]
 
+### Added
+- Implemented a soundpad api into lua! Use `soundpad::write()` to write directly to the soundpad pipe!
+
 ## [v0.11.0] - 2024-03-06
 
 ### Changed
