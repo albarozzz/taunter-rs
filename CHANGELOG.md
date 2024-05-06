@@ -3,11 +3,16 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
- 
+
 ## [Unreleased]
+ 
+## [v0.11.1] - 2024-05-06
 
 ### Added
 - Implemented a soundpad api into lua! Use `soundpad::write()` to write directly to the soundpad pipe!
+
+### Fixed
+- Various minor bugs 
 
 ## [v0.11.0] - 2024-03-06
 

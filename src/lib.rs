@@ -229,10 +229,10 @@ impl LastLines {
 
     /// Gets the text of size chunk_size starting in start_pos (file_size - chunk_size) 
     pub fn get_text(mut self) -> Result<String> {
-        let mut buffer = String::new();
+        let mut buffer: Vec<u8> = Vec::new();
         self.file.seek(SeekFrom::Start(self.start_pos))?;
-        (&self.file).take(self.chunk_size).read_to_string(&mut buffer)?;
-        Ok(buffer)
+        (&self.file).take(self.chunk_size).read_to_end(&mut buffer)?;
+        Ok(String::from_utf8_lossy(&buffer).into_owned())
     }
 }
 

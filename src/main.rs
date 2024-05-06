@@ -61,7 +61,14 @@ async fn main() -> Result<()> {
         println!("Waiting for Discord Rich Presence...");
         rpc.start();
         rpc.block_until_event(discord_presence::Event::Ready)?;
-        println!("Connected to Discord Rich Presence!")
+        println!("Connected to Discord Rich Presence!");
+
+        let _ = rpc.set_activity(|act| {
+            act.details("Playing Team Fortress 2")
+                .timestamps(|t| t.start(unix_seconds))
+                .state("Ready to kill!")
+                .assets(|a| a.large_image("taunter"))
+        });
     }
 
     if !config.ignore_warning {
@@ -153,12 +160,6 @@ async fn main() -> Result<()> {
                 if is_killed {
                     count_deaths += 1;
                     println!("{}", line);
-                    if config.use_discord_rpc
-                        && !update_rpc(&mut rpc, &username, &victim, count_deaths, unix_seconds)
-                            .await
-                    {
-                        println!("RPC failed!");
-                    }
                     last_line = line.to_string();
 
                     #[cfg(target_family = "windows")]
@@ -229,6 +230,15 @@ async fn main() -> Result<()> {
                         let _ = conn.send_command(&config.extra_commands).await;
                     }
                     // ------
+                }
+
+                if config.use_discord_rpc && count_deaths % 5 == 0 {
+                    let _ = rpc.set_activity(|act| {
+                        act.details("Playing Team Fortress 2")
+                            .timestamps(|t| t.start(unix_seconds))
+                            .state(format!("Kills: {count_deaths}"))
+                            .assets(|a| a.large_image("taunter"))
+                    });
                 }
             }
             task::sleep(Duration::from_millis(32)).await;
