@@ -28,7 +28,7 @@ jobs:
           - os: macos-latest
             files: assets/config.json,assets/users.json,assets/custom.lua,README.md,LICENSE
           - os: windows-latest
-            files: .lua/bin/lua54.dll,assets/config.json,assets/users.json,assets/custom.lua,README.md,LICENSE
+            files: .lua/lib/lua54.dll,assets/config.json,assets/users.json,assets/custom.lua,README.md,LICENSE
 
 
     runs-on: ${{ matrix.os }}
