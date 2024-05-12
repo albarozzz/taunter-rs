@@ -230,15 +230,15 @@ async fn main() -> Result<()> {
                         let _ = conn.send_command(&config.extra_commands).await;
                     }
                     // ------
-                }
 
-                if config.use_discord_rpc && count_deaths % 5 == 0 {
-                    let _ = rpc.set_activity(|act| {
-                        act.details("Playing Team Fortress 2")
-                            .timestamps(|t| t.start(unix_seconds))
-                            .state(format!("Kills: {count_deaths}"))
-                            .assets(|a| a.large_image("taunter"))
-                    });
+                    if config.use_discord_rpc && count_deaths % 5 == 0 {
+                        let _ = rpc.set_activity(|act| {
+                            act.details("Playing Team Fortress 2")
+                                .timestamps(|t| t.start(unix_seconds))
+                                .state(format!("Kills: {count_deaths}"))
+                                .assets(|a| a.large_image("taunter"))
+                        });
+                    }
                 }
             }
             task::sleep(Duration::from_millis(32)).await;
