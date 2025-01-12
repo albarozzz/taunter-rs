@@ -3,6 +3,8 @@ use discord_presence::Client;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rcon::Connection;
+use std::arch::x86_64;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -21,6 +23,7 @@ async fn main() -> Result<()> {
     };
     let mut count_deaths: u32 = 0;
     let mut code: String = String::new();
+    let mut dominations: HashMap<String, u64> = HashMap::new();
 
     if config.use_custom_lua {
         let _ = match File::open("custom.lua") {
@@ -138,9 +141,15 @@ async fn main() -> Result<()> {
             // the line of the latest kill to EOF
             for line in lines_last_pos[find_line + 1..].iter() {
                 let (username, victim) = get_usernames(line);
+                let mut is_dominating: bool = false;
 
                 if username.is_empty() || victim.is_empty() {
                     continue;
+                }
+
+                if config.usernames.contains(&victim) {
+                    dominations.remove(&format!("{}-{}", &username, &victim));
+                    is_dominating = false;
                 }
 
                 let is_killed = match config.use_custom_lua {
@@ -158,6 +167,24 @@ async fn main() -> Result<()> {
                 };
 
                 if is_killed {
+                    if let Some(x) = dominations.get_mut(&format!("{}-{}", &victim, &username)) {
+                        *x += 1;
+                    } else {
+                        dominations.insert(format!("{}-{}", &victim, &username), 0);
+                    }
+
+                    //*dominations
+                    //    .get_mut(&format!("{}-{}", &victim, &username))
+                    //    .unwrap_or(&mut 0) += 1;
+                    if *dominations
+                        .get(&format!("{}-{}", &victim, &username))
+                        .unwrap_or(&0)
+                        == 4
+                    {
+                        is_dominating = true;
+                    }
+                    println!("{:?}", dominations);
+
                     count_deaths += 1;
                     println!("{}", line);
                     last_line = line.to_string();
@@ -197,11 +224,27 @@ async fn main() -> Result<()> {
                             //task::sleep(Duration::from_millis(1000)).await;
                             //let _ = send_command(&mut conn, "-left").await;
                         }
-                        if !individual_configuration.message_to_send.is_empty() {
-                            let choosed: &str = individual_configuration
+                        if !is_dominating && !individual_configuration.message_to_send.is_empty() {
+                            let choosed: &str = &individual_configuration
                                 .message_to_send
                                 .choose(&mut rng)
-                                .unwrap(); // select random response
+                                .unwrap()
+                                .to_string()
+                                .replace("{victim}", &victim)
+                                .replace("{count}", &count_deaths.to_string()); // select random response
+                            let _ = conn.say(choosed).await;
+                        } else if is_dominating
+                            && !individual_configuration
+                                .message_to_send_when_dominated
+                                .is_empty()
+                        {
+                            let choosed: &str = &individual_configuration
+                                .message_to_send_when_dominated
+                                .choose(&mut rng)
+                                .unwrap()
+                                .to_string()
+                                .replace("{victim}", &victim)
+                                .replace("{count}", &count_deaths.to_string()); // select random response
                             let _ = conn.say(choosed).await;
                         }
                         if !individual_configuration.extra_commands.is_empty() {
@@ -214,8 +257,23 @@ async fn main() -> Result<()> {
                     // ------
 
                     // If the victim is not 'configured' on users.json proceed with generic
-                    if !config.words.is_empty() {
-                        let choosed: &str = config.words.choose(&mut rng).unwrap(); // select random response
+                    if !is_dominating && !config.words.is_empty() {
+                        let choosed: &str = &config
+                            .words
+                            .choose(&mut rng)
+                            .unwrap()
+                            .to_string()
+                            .replace("{victim}", &victim)
+                            .replace("{count}", &count_deaths.to_string()); // select random response
+                        let _ = conn.say(choosed).await;
+                    } else if is_dominating && !config.special_words.is_empty() {
+                        let choosed: &str = &config
+                            .special_words
+                            .choose(&mut rng)
+                            .unwrap()
+                            .to_string()
+                            .replace("{victim}", &victim)
+                            .replace("{count}", &count_deaths.to_string()); // select random response
                         let _ = conn.say(choosed).await;
                     }
                     if config.use_taunt {

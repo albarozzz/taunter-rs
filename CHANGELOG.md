@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.12] - 2025-01-12
+
+### Added
+- Now you can send special messages when dominating someone with --special-words!
+
 ## [v0.11.2] - 2024-05-12
 
 ### Fixed

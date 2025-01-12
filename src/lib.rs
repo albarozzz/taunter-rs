@@ -118,6 +118,16 @@ pub struct Config {
 
     #[serde(default)]
     #[arg(
+        short = 'a', 
+        long = "special-words", 
+        num_args(0..),
+        value_delimiter = ',',
+        help("A list of words to send through chat when victim is dominated by any username selected, the delimiter is ','. Optional. eg: --special-words hi, hello, \"what's up?\",...")
+    )]
+    pub special_words: Vec<String>,
+
+    #[serde(default)]
+    #[arg(
         short = 'o', 
         long = "use-discord-rpc", 
         default_value_t = false,
@@ -192,6 +202,8 @@ pub struct UsernameVictimConfig {
     // -------------------
     #[serde(default)]
     pub message_to_send: Vec<String>,
+    #[serde(default)]
+    pub message_to_send_when_dominated: Vec<String>,
     #[serde(default)]
     pub extra_commands: String
 }
