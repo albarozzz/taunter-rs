@@ -3,7 +3,6 @@ use discord_presence::Client;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rcon::Connection;
-use std::arch::x86_64;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
